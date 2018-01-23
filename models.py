@@ -10,7 +10,7 @@ class Properties(db.Model):
     pid = db.Column(db.String, nullable=False)
     aliases = db.Column(db.String, nullable=True)
 
-    def __init__(self, label, pid, aliases):
+    def __init__(self, label, pid, aliases=None):
         self.label = label
         self.pid = pid
         self.aliases = aliases

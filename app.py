@@ -24,11 +24,11 @@ def index():
 		return render_template('index.html',page="home",history=history)
 	elif request.method == 'POST':
 		history = History.query.order_by(History.id.desc()).limit(5)
-		
+
 		app.logger.info(repr(request.form))
 		question = request.form['question']
 		question = question.replace('?','')
-		
+
 		blob = TextBlob(question)				#tags the question
 		q_tagged = blob.tags
 		app.logger.info(repr(q_tagged))
@@ -85,7 +85,7 @@ def index():
 
 		if typ == "list":
 			app.logger.info(repr("list"))
-			
+
 			np_tree=parsed['np_tree']
 			value = get_list(q_noun,np_tree)
 			if value==True:
@@ -101,7 +101,7 @@ def index():
 			else:
 				answer = "As of now, the System is unable to answer the question."
 				value = {'question':question,'answer':answer, 'content' : "string"}
-			
+
 		if typ == "distance":
 			app.logger.info(repr("distance"))
 			value = get_distance(q_noun)
@@ -128,7 +128,7 @@ def index():
 				saveqa(question,noun_save,answer,value['content'])
 			else:
 				saveqa(question,noun_save,value['answer'],value['content'])
-			
+
 		flash(value,'success')
 		app.logger.info(repr(value))
 		return render_template('index.html',page="home",history=history)
@@ -147,12 +147,12 @@ def parse(q_tagged):
 		app.logger.info(repr(grammar))
 		np_parser = nltk.RegexpParser(grammar)
 		np_tree = np_parser.parse(q_tagged)
-		q_noun = []	
+		q_noun = []
 		app.logger.info(repr(np_tree))
-		for i in np_tree:	
+		for i in np_tree:
 			app.logger.info(repr("NP : " + str(i)))						#to get all the Noun Phrases to q_noun
 			NPs=""
-			if str(type(i))=="<class 'nltk.tree.Tree'>":		
+			if str(type(i))=="<class 'nltk.tree.Tree'>":
 				for k in i:
 					if j==0:
 						if k[1]=="NNS":
@@ -169,8 +169,9 @@ def parse(q_tagged):
 						if a.match(k[1]):
    							q_noun.append(NPs)
    							NPs=""
-   						t=k[0]
-
+						else:
+   							t=k[0]
+#ASHNA MADE CHANGE
 					if NPs=="":
 						NPs=t
 					else:
@@ -224,8 +225,8 @@ def qcheck(parsed):
 			x=str(q_noun[idx]).replace(" ","+")
 			q_noun[idx]=x
 		return {'q_noun':q_noun,'type':"description"}
-	
-	
+
+
 	rng = False
 	dt = False
 	for idx,k in enumerate(q_noun):
@@ -252,8 +253,8 @@ def wikidata_search(q_noun):
 		app.logger.info(repr(str(q_noun[idx])))
 		x=str(q_noun[idx]).replace(" ","+")
 		q_noun[idx]=x
-	
-	for idx,i in enumerate(q_noun):			
+
+	for idx,i in enumerate(q_noun):
 		ur = "https://www.wikidata.org/w/api.php?action=wbsearchentities&search="+i+"&format=json&language=en"
 		app.logger.info(repr(ur))
 		response = urllib2.urlopen(ur)
@@ -295,7 +296,7 @@ def get_list(q_noun,np_tree):
 		app.logger.info(repr(ur))
 		response = urllib2.urlopen(ur)
 		data = json.load(response)
-	
+
 		ct=0
 		if data['status']['items']!=0:
 			list_position=True
@@ -311,18 +312,18 @@ def get_list(q_noun,np_tree):
 		if list_position or list_instance:
 			value=[]
 			value1=""
-			for i in range(len(data['items'])):	
+			for i in range(len(data['items'])):
 				#gets value from property page
 
 				value_id = data['items'][i]
 				app.logger.info(repr(value_id))
-									
+
 				data2 = wikidata_get_entity("Q"+str(value_id))
 				ct+=1
 				if data2['success']:
 					if 'labels' in data2['entities']['Q'+str(value_id)]:
 						if ct>0:
-							value1=value1+", "	
+							value1=value1+", "
 						value.append(data2['entities']['Q'+str(value_id)]['labels']['en']['value'])
 						value1=value1+data2['entities']['Q'+str(value_id)]['labels']['en']['value']
 					else:
@@ -377,11 +378,11 @@ def get_list(q_noun,np_tree):
 				obj = data['entities'][qid1]['claims']['P31'][0]['mainsnak']['datatype']
 				app.logger.info(repr(obj))
 				if obj == "wikibase-item":				#property value is another entity
-					for i in range(len(data['entities'][qid1]['claims']['P31'])):	
-						#gets value from property page	
+					for i in range(len(data['entities'][qid1]['claims']['P31'])):
+						#gets value from property page
 						value_id = data['entities'][qid1]['claims']['P31'][i]['mainsnak']['datavalue']['value']['numeric-id']
 						app.logger.info(repr(value_id))
-						pty=[]	
+						pty=[]
 						ptyl=[]
 						b=False
 
@@ -403,7 +404,7 @@ def get_list(q_noun,np_tree):
 									continue
 								app.logger.info(repr("pty found" + str(pty)))
 								pid = pty.pid
-								
+
 								ur="https://wdq.wmflabs.org/api?q=claim[31:"+qid[1:]+"]%20and%20claim["+pid[1:]+":"+qid1[1:]+"]"
 								response = urllib2.urlopen(ur)
 								data = json.load(response)
@@ -412,13 +413,13 @@ def get_list(q_noun,np_tree):
 								ct=0
 								if data['status']['items']!=0:
 									gr=True
-										
-									for i in range(len(data['items'])):	
+
+									for i in range(len(data['items'])):
 										#gets value from property page
-												
+
 										value_id = data['items'][i]
 										app.logger.info(repr(value_id))
-													
+
 
 										data2 = wikidata_get_entity("Q"+str(value_id))
 										ct+=1
@@ -430,12 +431,12 @@ def get_list(q_noun,np_tree):
 												value1+=data2['entities']['Q'+str(value_id)]['labels']['en']['value']
 											else:
 												continue
-									break	
+									break
 								else:
 									continue
 							else:
 								error = True
-								
+
 						else:
 							continue
 				else:
@@ -470,7 +471,7 @@ def get_distance(q_noun):
 			error = True
 	else:
 		error = True
-			
+
 	wikidatasearch = wikidata_search([loc2])
 	if wikidatasearch['qid']:
 		qid2 = wikidatasearch['qid']
@@ -485,19 +486,19 @@ def get_distance(q_noun):
 		error = True
 
 	if not error:
-		# convert decimal degrees to radians 
+		# convert decimal degrees to radians
 		lon1, lat1, lon2, lat2 = map(radians, [lonvalue1, latvalue1, lonvalue2, latvalue2])
 
-		# haversine formula 
-		dlon = lon2 - lon1 
-		dlat = lat2 - lat1 
+		# haversine formula
+		dlon = lon2 - lon1
+		dlat = lat2 - lat1
 		a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-		c = 2 * asin(sqrt(a)) 
+		c = 2 * asin(sqrt(a))
 		r = 6371 # Radius of earth in kilometers. Use 3956 for miles
 		d = int(c*r)
 		value = str(d) + " kms approx."
 		val = {'question':question,'answer':value, 'content' : "string"}
-		
+
 		return val
 	else:
 		return error
@@ -512,7 +513,7 @@ def get_date(q_noun):
 			bkp.append(i)
 	q_noun = bkp[:]
 	app.logger.info(repr(q_noun))
-	
+
 	for idx,i in enumerate(q_noun):
 		q_noun[idx] = i.replace('/','-')
 	app.logger.info(repr(q_noun))
@@ -534,7 +535,7 @@ def get_description(q_noun):
 		des = False
 		if 'descriptions' in data['entities'][qid1]:
 				value = data['entities'][qid1]['descriptions']['en']['value']
-				des = True		
+				des = True
 		if not des:
 			value=searchwiki(q_noun[0])
 
@@ -569,7 +570,7 @@ def get_property(q_noun):
 
 
 	if not ptyl:										#search for property in the DB with single entry of q_noun
-		for idx,i in enumerate(q_noun):	
+		for idx,i in enumerate(q_noun):
 			ptyl = Properties.query.filter(Properties.label.like("%"+i+"%")).all()		#searches in label
 			if not ptyl:
 				ptyl = Properties.query.filter(Properties.aliases.like("%"+i+"%")).all()		#search in aliases
@@ -595,7 +596,7 @@ def get_property(q_noun):
 
 def get_general(q_noun,pty):
 	qid = False
-	
+
 	wikidatasearch = wikidata_search(q_noun)
 	if wikidatasearch:
 		qid = wikidatasearch['qid']
@@ -605,11 +606,11 @@ def get_general(q_noun,pty):
 	if qid:
 		data = wikidata_get_entity(qid)
 
-		if 'claims' in data['entities'][qid]:		#checks whether entity has any statements		
+		if 'claims' in data['entities'][qid]:		#checks whether entity has any statements
 			for prop in pty:
 				pid = prop.pid
 				app.logger.info(repr("Pid  : "+pid))
-				
+
 				if pid in data['entities'][qid]['claims']:	#checks whether entity has the given property
 					app.logger.info(repr("pid = " + str(pid)))
 					obj = data['entities'][qid]['claims'][pid][0]['mainsnak']['datatype']
@@ -617,13 +618,13 @@ def get_general(q_noun,pty):
 					if obj == "wikibase-item":				#property value is another entity
 						value=""
 						ct=0
-						for i in range(len(data['entities'][qid]['claims'][pid])):	
+						for i in range(len(data['entities'][qid]['claims'][pid])):
 									#gets value from property page
 							if ct>0:
-								value=value+", "		
+								value=value+", "
 							value_id = data['entities'][qid]['claims'][pid][i]['mainsnak']['datavalue']['value']['numeric-id']
 							app.logger.info(repr(value_id))
-						
+
 							data2 = wikidata_get_entity("Q"+str(value_id))
 							ct+=1
 							if data2['success']:
@@ -638,7 +639,7 @@ def get_general(q_noun,pty):
 						value = data['entities'][qid]['claims'][pid][0]['mainsnak']['datavalue']['value']
 						val = {'question':question,'answer':value , 'content' : "string"}
 						return val
-					
+
 					elif obj == "globe-coordinate":					#if property value is geo coordinates
 						latvalue = data['entities'][qid]['claims'][pid][0]['mainsnak']['datavalue']['value']['latitude']
 						lonvalue = data['entities'][qid]['claims'][pid][0]['mainsnak']['datavalue']['value']['longitude']
@@ -658,14 +659,14 @@ def get_general(q_noun,pty):
 
 					elif obj=="commonsMedia":
 						value = data['entities'][qid]['claims'][pid][0]['mainsnak']['datavalue']['value']
-						value = value.replace(" ","_")	
-						app.logger.info(repr(value))						
+						value = value.replace(" ","_")
+						app.logger.info(repr(value))
 						ur = "http://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&titles=Image:"+value+"&iiprop=url&format=json"
 						response1 = urllib2.urlopen(ur)
 						data2 = json.load(response1)
 						for a in data2['query']['pages']:
 							url = data2['query']['pages'][a]['imageinfo'][0]['url']
-							break 
+							break
 						if url:
 							val= {'question':question,'answer':url , 'content' : "media" }
 						return val
@@ -690,7 +691,7 @@ def get_general(q_noun,pty):
 		else:
 			val = {'question':question,'answer':"As of now, the system is unable to answer the question", 'content' : "string"}
 		return val
-					
+
 def saveqa(question,q_noun,answer,content):
 	app.logger.info(repr("in fn"))
 	q = History(question,q_noun,answer,content)
@@ -698,7 +699,7 @@ def saveqa(question,q_noun,answer,content):
 	db.session.commit()
 
 def searchwiki(question):
-	
+
 	key = wikipedia.search(question)
 	app.logger.info(repr("searching wikipedia for" + str(question)))
 	if key:
