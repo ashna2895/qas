@@ -7,6 +7,8 @@
 
 ### Requirements ###
 
-* Python.
+* Python 2.7.
 * Flask microframework.
 * NLTK, Pattern and Textblob packages.
+
+run createdb.py then grabprop.py then app.py
