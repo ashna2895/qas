@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>NAT LAN</title>
+    <title>qBot</title>
 
     <!-- Bootstrap core CSS -->
     <link href="{{ url_for('static', filename='css/bootswatch.css')}}" rel="stylesheet">
@@ -35,14 +35,14 @@
         <div class="panel panel-default">
           <div class="panel-body">
             <form id="form"  role="form" method="post">
-              
+
               <div class="form-group">
                 <input type="text" class="form-control" name="question" placeholder="What is the capital of india?" {{('value="%s"' %oldform['question'])|safe if retry}} required>
-              </div>   
+              </div>
             </form>
           </div>
           {% include 'flash.html'%}
-        </div> 
+        </div>
       </div>
 
       <div class="col-md-10 col-md-offset-1">
@@ -50,7 +50,7 @@
           <table id="history" class="table table-hover">
             <thead>
                         <tr>
-                          <th class="col-md-1">Sl No:</th>                        
+                          <th class="col-md-1">Sl No:</th>
                           <th class="col-md-7"> Question </th>
                           <th class="col-md-4">Answer</th>
                         </tr>
@@ -59,11 +59,11 @@
                         {% set i = 1 %}
                         {% for q in history %}
                         <tr>
-                        
+
                           <td class="col-md-1">{{i}}</td>
                           <td class="col-md-7">{{q.question}}</td>
                           <td class="col-md-4">{{q.answer}}</td>
-                        
+
                         </tr>
                         {% set i = i +1 %}
                         {% endfor %}
